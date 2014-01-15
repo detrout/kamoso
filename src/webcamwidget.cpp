@@ -244,6 +244,8 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
         QImage::Format format = QImage::Format_Invalid;
         int bpp = structure.data()->value("bpp").get<int>();
 
+        // need a better solution.
+        bpp = 24;
         if (bpp == 24)
             format = QImage::Format_RGB888;
         else if (bpp == 32)
