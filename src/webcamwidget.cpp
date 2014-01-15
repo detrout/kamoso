@@ -180,6 +180,9 @@ bool WebcamWidget::takePhoto(const KUrl &dest)
     }
     kDebug() << dest;
     d->destination = dest;
+    if (!d->m_bin) {
+        return false;
+    }
     d->m_bin->getElementByName("fakesink")->setProperty("signal-handoffs", true);
     QGlib::connect(d->m_bin->getElementByName("fakesink"), "handoff", this, &WebcamWidget::photoGstCallback);
     return true;
