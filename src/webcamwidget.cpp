@@ -130,8 +130,8 @@ void WebcamWidget::playFile(const Device &device)
     QByteArray pipe = basicPipe();
 
     //Set the right colorspace to convert to QImage
-    pipe += " ! ffmpegcolorspace ! "
-            GST_VIDEO_CAPS_xRGB_HOST_ENDIAN
+    pipe += " ! videoconvert ! "
+            GST_VIDEO_CAPS_MAKE("RGB")
             " ! fakesink name=fakesink";
 
     kDebug() << "================ PIPELINE ================";
@@ -200,7 +200,7 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr)
     kDebug() << "Size: " << width << "x" << height;
     kDebug() << "Name: " << structure.data()->name();
 
-    if (qstrcmp(structure.data()->name().toLatin1(), "video/x-raw-yuv") == 0) {
+    if (qstrcmp(structure.data()->name().toLatin1(), "video/x-raw, format=yuv") == 0) {
         QGst::Fourcc fourcc = structure->value("format").get<QGst::Fourcc>();
         kDebug() << "fourcc: " << fourcc.value.as_integer;
         if (fourcc.value.as_integer == QGst::Fourcc("I420").value.as_integer) {
@@ -229,7 +229,7 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr)
             kDebug() << "Not I420";
         }
 
-    } else if (qstrcmp(structure.data()->name().toLatin1(), "video/x-raw-rgb") == 0) {
+    } else if (qstrcmp(structure.data()->name().toLatin1(), "video/x-raw, format=rgb") == 0) {
         kDebug() << "RGB name";
         QImage::Format format = QImage::Format_Invalid;
         int bpp = structure.data()->value("bpp").get<int>();
@@ -285,7 +285,7 @@ void WebcamWidget::recordVideo(bool sound)
         //Get the audio from alsa
         " ! mux. autoaudiosrc "
         //Sound type and quality
-        " ! audio/x-raw-int,rate=48000,channels=2,depth=16 "
+        " ! audio/x-raw,rate=48000,channels=2,depth=16 "
         //Encode sound as vorbis
         " ! queue ! audioconvert ! queue "
         " ! vorbisenc "
@@ -368,11 +368,11 @@ QByteArray WebcamWidget::basicPipe()
 
     //Accepted capabilities
     pipe +=
-    " ! ffmpegcolorspace"
-    " ! video/x-raw-yuv, width=640, height=480, framerate=15/1;"
-    " video/x-raw-yuv, width=640, height=480, framerate=24/1;"
-    " video/x-raw-yuv, width=640, height=480, framerate=30/1;"
-    " video/x-raw-yuv, width=352, height=288, framerate=15/1"
+    " ! videoconvert"
+    " ! video/x-raw, width=640, height=480, framerate=15/1;"
+    " video/x-raw, width=640, height=480, framerate=24/1;"
+    " video/x-raw, width=640, height=480, framerate=30/1;"
+    " video/x-raw, width=352, height=288, framerate=15/1"
 
     //Basic plug-in for video controls
     " ! gamma name=gamma"
