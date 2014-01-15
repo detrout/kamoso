@@ -46,6 +46,7 @@
 #include <QGst/Element>
 #include <QGst/Parse>
 #include <QGst/Buffer>
+#include <QGst/Memory>
 #include <QGst/Pad>
 #include <QGst/Fourcc>
 #include <QGst/ElementFactory>
@@ -204,26 +205,30 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr)
         QGst::Fourcc fourcc = structure->value("format").get<QGst::Fourcc>();
         kDebug() << "fourcc: " << fourcc.value.as_integer;
         if (fourcc.value.as_integer == QGst::Fourcc("I420").value.as_integer) {
+            QGst::MapInfo memory_info;
             img = QImage(width/2, height/2, QImage::Format_RGB32);
 
-            const uchar *data = (const uchar *)buffer->data();
+            if (buffer->map(memory_info, QGst::MapRead)) {
+                const uchar *data = (const uchar *)memory_info.data;
 
-            for (int y=0; y<height; y+=2) {
-                const uchar *yLine = data + y*width;
-                const uchar *uLine = data + width*height + y*width/4;
-                const uchar *vLine = data + width*height*5/4 + y*width/4;
+                for (int y=0; y<height; y+=2) {
+                    const uchar *yLine = data + y*width;
+                    const uchar *uLine = data + width*height + y*width/4;
+                    const uchar *vLine = data + width*height*5/4 + y*width/4;
 
-                for (int x=0; x<width; x+=2) {
-                    const qreal Y = 1.164*(yLine[x]-16);
-                    const int U = uLine[x/2]-128;
-                    const int V = vLine[x/2]-128;
+                    for (int x=0; x<width; x+=2) {
+                        const qreal Y = 1.164*(yLine[x]-16);
+                        const int U = uLine[x/2]-128;
+                        const int V = vLine[x/2]-128;
 
-                    int b = qBound(0, int(Y + 2.018*U), 255);
-                    int g = qBound(0, int(Y - 0.813*V - 0.391*U), 255);
-                    int r = qBound(0, int(Y + 1.596*V), 255);
+                        int b = qBound(0, int(Y + 2.018*U), 255);
+                        int g = qBound(0, int(Y - 0.813*V - 0.391*U), 255);
+                        int r = qBound(0, int(Y + 1.596*V), 255);
 
-                    img.setPixel(x/2,y/2,qRgb(r,g,b));
+                        img.setPixel(x/2,y/2,qRgb(r,g,b));
+                    }
                 }
+                buffer->unmap(memory_info);
             }
         } else {
             kDebug() << "Not I420";
@@ -240,11 +245,15 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr)
             format = QImage::Format_RGB32;
 
         if (format != QImage::Format_Invalid) {
-            img = QImage((const uchar *)buffer->data(),
-                            width,
-                            height,
-                            format);
-            img.bits(); //detach
+            QGst::MapInfo memory_info;
+            if (buffer->map(memory_info, QGst::MapRead)) {
+                img = QImage((const uchar *)memory_info.data,
+                                width,
+                                height,
+                                format);
+                img.bits(); //detach
+                buffer->unmap(memory_info);
+            }
         }
     }
 
