@@ -200,11 +200,14 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
     int width, height;
     width = structure.data()->value("width").get<int>();
     height = structure.data()->value("height").get<int>();
+    QString format;
+    format = structure.data()->value("format").get<QString>();
     kDebug() << "We've got a caps in here";
     kDebug() << "Size: " << width << "x" << height;
     kDebug() << "Name: " << structure.data()->name();
+    kDebug() << "Format: " << format;
 
-    if (qstrcmp(structure.data()->name().toLatin1(), "video/x-raw, format=yuv") == 0) {
+    if (format == "YUV") {
         QGst::Fourcc fourcc = structure->value("format").get<QGst::Fourcc>();
         kDebug() << "fourcc: " << fourcc.value.as_integer;
         if (fourcc.value.as_integer == QGst::Fourcc("I420").value.as_integer) {
@@ -237,8 +240,7 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
             kDebug() << "Not I420";
         }
 
-    } else if (qstrcmp(structure.data()->name().toLatin1(), "video/x-raw, format=rgb") == 0) {
-        kDebug() << "RGB name";
+    } else if (format == "RGB") {
         QImage::Format format = QImage::Format_Invalid;
         int bpp = structure.data()->value("bpp").get<int>();
 
