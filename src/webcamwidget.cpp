@@ -186,12 +186,12 @@ bool WebcamWidget::takePhoto(const KUrl &dest)
 }
 
 //This code has been borrowed from the Qt Multimedia project.
-void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr)
+void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
 {
     kDebug();
 
     QImage img;
-    QGst::CapsPtr caps = buffer->caps();
+    QGst::CapsPtr caps = pad->caps();
 
     const QGst::StructurePtr structure = caps->internalStructure(0);
     int width, height;
