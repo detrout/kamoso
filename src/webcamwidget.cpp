@@ -158,7 +158,7 @@ void WebcamWidget::playFile(const Device &device)
     setVideoSettings();
 
     kDebug() << "================ Capabilities ================";
-    kDebug() << d->m_pipeline->getElementByName("v4l2src")->getStaticPad("src")->caps()->toString();
+    //kDebug() << d->m_pipeline->getElementByName("v4l2src")->getStaticPad("src")->caps()->toString();
     d->m_pipeline->setState(QGst::StatePlaying);
 }
 
