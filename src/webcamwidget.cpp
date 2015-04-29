@@ -194,7 +194,7 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
     kDebug();
 
     QImage img;
-    QGst::CapsPtr caps = pad->caps();
+    QGst::CapsPtr caps = pad->currentCaps();
 
     const QGst::StructurePtr structure = caps->internalStructure(0);
     int width, height;
