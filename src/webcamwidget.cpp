@@ -215,7 +215,7 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
             img = QImage(width/2, height/2, QImage::Format_RGB32);
 
             if (buffer->map(memory_info, QGst::MapRead)) {
-                const uchar *data = (const uchar *)memory_info.data;
+              const uchar *data = (const uchar *)memory_info.data();
 
                 for (int y=0; y<height; y+=2) {
                     const uchar *yLine = data + y*width;
@@ -254,7 +254,7 @@ void WebcamWidget::photoGstCallback(QGst::BufferPtr buffer, QGst::PadPtr pad)
         if (format != QImage::Format_Invalid) {
             QGst::MapInfo memory_info;
             if (buffer->map(memory_info, QGst::MapRead)) {
-                img = QImage((const uchar *)memory_info.data,
+                img = QImage((const uchar *)memory_info.data(),
                                 width,
                                 height,
                                 format);
